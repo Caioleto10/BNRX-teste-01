@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: brn_postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: brn_backend_app
+    restart: always
+    ports:
+      - "3333:3333"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public"
+      NODE_ENV: development
+    volumes:
+      - ./backend:/app 
+
+  frontend:
+    build: ./frontend
+    container_name: brn_frontend_app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app 
+      - /app/node_modules 
+
+volumes:
+  pgdata:

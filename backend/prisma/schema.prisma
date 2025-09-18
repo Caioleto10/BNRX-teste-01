@@ -1,0 +1,45 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Provider {
+  id           String    @id @default(uuid())
+  companyName  String    @unique 
+  contactName  String    
+  contactInfo  String    
+  demands      Demand[]  
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Demand {
+  id          String   @id @default(uuid())
+  title       String   
+  description String   
+  type        String   
+  status      String   @default("Pendente") 
+  provider    Provider @relation(fields: [providerId], references: [id])
+  providerId  String
+  actions     Action[] 
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Action {
+  id                String   @id @default(uuid())
+  description       String   
+  technicianName    String   
+  executionDate     DateTime @default(now())
+  demand            Demand   @relation(fields: [demandId], references: [id])
+  demandId          String
+
+  createdAt         DateTime @default(now())
+}
